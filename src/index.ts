@@ -4,13 +4,14 @@ import sizeOf from 'image-size';
 import path from 'path';
 import sharp from 'sharp';
 import ResizeObject from './ResizeObject.interface'
+import { Request, Response } from 'express';
 
 const app = express();
 const port = 3000;
 const imageFolderPath = path.join(__dirname, '..', 'static', 'img');
 
 
-app.get('/api/images', async (req, res) => {
+app.get('/api/images', async (req:Request, res:Response) => {
     let responseFromSecondFunction:ResizeObject={status:'', msg:''};
     try {
         const name: string = req.query.filename as string;

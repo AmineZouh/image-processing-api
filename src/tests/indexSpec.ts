@@ -1,16 +1,27 @@
 import supertest from 'supertest';
 import app from '../index';
+import path from 'path';
+import fs from 'fs'
 
 const request = supertest(app);
 
 describe('the api should passes all those tests', () => {
     it('should get the endpoint api/images', async () => {
-        const path =
-            'D:\\Projets\\Udacity-exercices-projects\\image processing api\\static\\thumbnail\\fjord_thumb.jpg';
+        const testPath =
+            path.join(__dirname, '..', '..', 'static', 'thumbnail', 'fjord_thumb.jpg');
         const response = await request.get(
             '/api/images?filename=fjord.jpg&width=360&height=350'
         );
-        expect(response.text).toBe(path);
+        expect(response.text).toBe(testPath);
+    });
+    it('a new image should be situated at thumbnail folder when getting the endpoint', async () => {
+        const response = await request.get(
+            '/api/images?filename=icelandwaterfall.jpg&width=360&height=350'
+        );
+        setTimeout(()=>{
+            expect(fs.existsSync(response.text)).toBe(true);
+        }, 1000)
+        
     });
     it('expect transform to not throw error', async () => {
         const ErrorMsgPath =
