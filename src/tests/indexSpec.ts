@@ -1,9 +1,9 @@
-import supertest from 'supertest';
-import app from '../index';
+import fs from 'fs';
+import { imageSize } from 'image-size';
 import path from 'path';
-import fs from 'fs'
+import supertest from 'supertest';
 import { transform } from '../ImageHandling';
-import {imageSize} from 'image-size'
+import app from '../index';
 
 const request = supertest(app);
 
@@ -45,8 +45,6 @@ describe('the api should passes all those tests', () => {
         const imagePath = path.join(__dirname, '..', '..', 'static', 'img', 'encenadaport.jpg')
         const width = 206
         const height = 311
-        const ErrorMsgPath =
-            'D:\\Projets\\Udacity-exercices-projects\\image processing api\\static\\img\\encenadaport.jpg';
         expect(async ()=>{
             const response = await transform(imagePath, width, height)
             return response.status

@@ -39,12 +39,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var supertest_1 = __importDefault(require("supertest"));
-var index_1 = __importDefault(require("../index"));
-var path_1 = __importDefault(require("path"));
 var fs_1 = __importDefault(require("fs"));
-var ImageHandling_1 = require("../ImageHandling");
 var image_size_1 = require("image-size");
+var path_1 = __importDefault(require("path"));
+var supertest_1 = __importDefault(require("supertest"));
+var ImageHandling_1 = require("../ImageHandling");
+var index_1 = __importDefault(require("../index"));
 var request = (0, supertest_1.default)(index_1.default);
 describe('the api should passes all those tests', function () {
     it('should get the endpoint api/images', function () { return __awaiter(void 0, void 0, void 0, function () {
@@ -107,12 +107,11 @@ describe('the api should passes all those tests', function () {
         });
     }); });
     it('expect transform to not return error message', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var imagePath, width, height, ErrorMsgPath;
+        var imagePath, width, height;
         return __generator(this, function (_a) {
             imagePath = path_1.default.join(__dirname, '..', '..', 'static', 'img', 'encenadaport.jpg');
             width = 206;
             height = 311;
-            ErrorMsgPath = 'D:\\Projets\\Udacity-exercices-projects\\image processing api\\static\\img\\encenadaport.jpg';
             expect(function () { return __awaiter(void 0, void 0, void 0, function () {
                 var response;
                 return __generator(this, function (_a) {
