@@ -43,6 +43,7 @@ var supertest_1 = __importDefault(require("supertest"));
 var index_1 = __importDefault(require("../index"));
 var path_1 = __importDefault(require("path"));
 var fs_1 = __importDefault(require("fs"));
+var ImageHandling_1 = require("../ImageHandling");
 var request = (0, supertest_1.default)(index_1.default);
 describe('the api should passes all those tests', function () {
     it('should get the endpoint api/images', function () { return __awaiter(void 0, void 0, void 0, function () {
@@ -54,7 +55,9 @@ describe('the api should passes all those tests', function () {
                     return [4 /*yield*/, request.get('/api/images?filename=fjord.jpg&width=360&height=350')];
                 case 1:
                     response = _a.sent();
-                    expect(response.text).toBe(testPath);
+                    expect(response.error).toBeFalsy();
+                    expect(response.statusCode).toBe(200);
+                    expect(typeof response.text).toBe('string');
                     return [2 /*return*/];
             }
         });
@@ -73,22 +76,28 @@ describe('the api should passes all those tests', function () {
             }
         });
     }); });
-    it('expect transform to not throw error', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var ErrorMsgPath;
+    it('expect transform to not return error message', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var imagePath, width, height, ErrorMsgPath;
         return __generator(this, function (_a) {
+            imagePath = path_1.default.join(__dirname, '..', '..', 'static', 'img', 'encenadaport.jpg');
+            width = 206;
+            height = 311;
             ErrorMsgPath = 'D:\\Projets\\Udacity-exercices-projects\\image processing api\\static\\img\\encenadaport.jpg';
             expect(function () { return __awaiter(void 0, void 0, void 0, function () {
+                var response;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, request.get('/api/images?filename=encenadaport.jpg&width=300&height=350')];
-                        case 1: return [2 /*return*/, _a.sent()];
+                        case 0: return [4 /*yield*/, (0, ImageHandling_1.transform)(imagePath, width, height)];
+                        case 1:
+                            response = _a.sent();
+                            return [2 /*return*/, response.status];
                     }
                 });
-            }); }).not.toThrowError(Error, "The following image occured :  ".concat(ErrorMsgPath, " is not readable or doesn't exist"));
+            }); }).not.toBe('Error');
             return [2 /*return*/];
         });
     }); });
-    it('expect transform to return error message', function () { return __awaiter(void 0, void 0, void 0, function () {
+    it('expect the endpoint to return error message', function () { return __awaiter(void 0, void 0, void 0, function () {
         var fileName, response;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -97,7 +106,7 @@ describe('the api should passes all those tests', function () {
                     return [4 /*yield*/, request.get('/api/images?filename=inexitant.jpg&width=300&height=350')];
                 case 1:
                     response = _a.sent();
-                    expect(response.text).toBe("".concat(fileName, " : This image doesn't existe"));
+                    expect(response.text).toBe("something wrong happened : Error: ".concat(fileName, " : This image doesn't existe"));
                     return [2 /*return*/];
             }
         });

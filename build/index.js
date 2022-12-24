@@ -43,12 +43,13 @@ var express_1 = __importDefault(require("express"));
 var fs_1 = __importDefault(require("fs"));
 var image_size_1 = __importDefault(require("image-size"));
 var path_1 = __importDefault(require("path"));
-var sharp_1 = __importDefault(require("sharp"));
+var ImageHandling_1 = require("./ImageHandling");
 var app = (0, express_1.default)();
 var port = 3000;
 var imageFolderPath = path_1.default.join(__dirname, '..', 'static', 'img');
+// const htmlImageBlock = `<!DOCTYPE html> <html lang='en'> <head> <meta charset='UTF-8'> <title>Document</title> </head> <body> <img src=`` alt=``> </body> </html>`
 app.get('/api/images', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var responseFromSecondFunction, name_1, originalImagePath, imageThumbPath, width, height, dimensions, thumbImageWidth, thumbImageHeight, err_1;
+    var responseFromSecondFunction, name_1, width, height, originalImagePath, imageThumbPath_1, dimensions, thumbImageWidth, thumbImageHeight, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -57,36 +58,42 @@ app.get('/api/images', function (req, res) { return __awaiter(void 0, void 0, vo
             case 1:
                 _a.trys.push([1, 9, , 10]);
                 name_1 = req.query.filename;
-                originalImagePath = path_1.default.join(imageFolderPath, name_1);
-                imageThumbPath = path_1.default.join(imageFolderPath, '..', 'thumbnail', name_1.split('.')[0] + '_thumb.jpg');
                 width = req.query.width;
                 height = req.query.height;
+                if (!width || !height || !name_1)
+                    throw new Error('Missing parametrs! please provide all required parametrs');
+                console.log('the types of the two params are', typeof width, typeof height);
+                if ((typeof Number(width) !== 'number' || width <= 0) || (typeof Number(height) !== 'number' || height <= 0))
+                    throw new Error('Incorect values! please provide a correct values to the parametrs');
+                originalImagePath = path_1.default.join(imageFolderPath, name_1);
+                imageThumbPath_1 = path_1.default.join(imageFolderPath, '..', 'thumbnail', name_1.split('.')[0] + '_thumb.jpg');
                 if (!fs_1.default.existsSync(originalImagePath)) return [3 /*break*/, 7];
-                if (!fs_1.default.existsSync(imageThumbPath)) return [3 /*break*/, 4];
-                dimensions = (0, image_size_1.default)(imageThumbPath);
+                if (!fs_1.default.existsSync(imageThumbPath_1)) return [3 /*break*/, 4];
+                dimensions = (0, image_size_1.default)(imageThumbPath_1);
                 thumbImageWidth = dimensions.width;
                 thumbImageHeight = dimensions.height;
                 if (!(width !== thumbImageWidth || height !== thumbImageHeight)) return [3 /*break*/, 3];
-                return [4 /*yield*/, giveOtherDim(originalImagePath, width, height)];
+                return [4 /*yield*/, (0, ImageHandling_1.transform)(originalImagePath, width, height)];
             case 2:
                 responseFromSecondFunction = _a.sent();
                 _a.label = 3;
             case 3: return [3 /*break*/, 6];
-            case 4: return [4 /*yield*/, giveOtherDim(originalImagePath, width, height)];
+            case 4: return [4 /*yield*/, (0, ImageHandling_1.transform)(originalImagePath, width, height)];
             case 5:
                 responseFromSecondFunction = _a.sent();
                 _a.label = 6;
             case 6: return [3 /*break*/, 8];
-            case 7:
-                responseFromSecondFunction.status = "error";
-                responseFromSecondFunction.msg = "".concat(name_1, " : This image doesn't existe");
-                _a.label = 8;
+            case 7: throw new Error("".concat(name_1, " : This image doesn't existe"));
             case 8:
                 if (responseFromSecondFunction.status === "error") {
                     res.send(responseFromSecondFunction.msg);
                 }
                 else {
-                    res.send(imageThumbPath);
+                    res.status(200);
+                    setTimeout(function () {
+                        res.send("\n                    <!DOCTYPE html>\n                    <html lang=\"en\">\n                    <head>\n                        <meta charset=\"UTF-8\">\n                        <title>Document</title>\n                        <script src=\"../src/index.ts\"></script>\n                    </head>\n                    <body>\n                        <div style=\"margin-left: 25%;margin-top: 10%\">\n                            <img src=".concat((0, ImageHandling_1.getImage)(imageThumbPath_1), " alt=").concat(name_1, ">\n                        </div>\n                    </body>\n                    </html>\n                "));
+                    }, 1000);
+                    // res.sendFile('./static/imagePage.html');
                 }
                 return [3 /*break*/, 10];
             case 9:
@@ -97,54 +104,6 @@ app.get('/api/images', function (req, res) { return __awaiter(void 0, void 0, vo
         }
     });
 }); });
-function giveOtherDim(imagePath, width, height) {
-    return __awaiter(this, void 0, void 0, function () {
-        var resultObject, listPaths, listPathWithoutLastElement, newImagePath, overridePath, fileContent;
-        return __generator(this, function (_a) {
-            resultObject = { status: '', msg: '' };
-            listPaths = imagePath.split('\\');
-            listPathWithoutLastElement = listPaths.slice(0, listPaths.length - 2);
-            newImagePath = path_1.default.join.apply(path_1.default, listPathWithoutLastElement);
-            overridePath = path_1.default.join(newImagePath, 'thumbnail', listPaths[listPaths.length - 1].split('.')[0] + '_thumb.jpg');
-            fileContent = fs_1.default.readFileSync(imagePath);
-            // async (err, data) => {
-            //     // const fsReadFileResult:ResizeObject = {status:'', msg:''}
-            //     if (data) {
-            (0, sharp_1.default)(fileContent)
-                .resize(Number(width), Number(height))
-                .toFile(overridePath, function (err, info) {
-                if (info) {
-                    resultObject.status = "success";
-                    resultObject.msg = "operation succeded";
-                    // console.log('the value of the variable resultObject is : ', resultObject)
-                    return resultObject;
-                }
-                else if (err) {
-                    resultObject.status = "error";
-                    resultObject.msg = "problem occured in resizing image , ".concat(err);
-                    console.log('the value of the variable resultObject is : ', resultObject);
-                    return resultObject;
-                }
-            });
-            return [2 /*return*/, resultObject
-                // } else if (err) {
-                //     resultObject.status = "error"
-                //     resultObject.msg = `Problem while reading the existing file , ${err}`
-                //     return resultObject
-                // }
-                // });
-                // } else {
-                //     resultObject.status = "error"
-                //     resultObject.msg = `${imagePath} is not readable or doesn't exist`
-                // }
-                // console.log('the value of the variable resultObject is : ', resultObject)
-                // });
-                // resultObject.status = fsReadFileResult.status
-                // resultObject.msg = fsReadFileResult.msg
-            ];
-        });
-    });
-}
 app.listen(port, function () {
     console.log("server is running at localhost:".concat(port));
 });

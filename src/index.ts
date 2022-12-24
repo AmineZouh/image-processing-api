@@ -2,19 +2,25 @@ import express from 'express';
 import fs from 'fs';
 import sizeOf from 'image-size';
 import path from 'path';
-import sharp from 'sharp';
 import ResizeObject from './ResizeObject.interface'
 import { Request, Response } from 'express';
+import {transform, getImage} from './ImageHandling';
 
 const app = express();
 const port = 3000;
 const imageFolderPath = path.join(__dirname, '..', 'static', 'img');
+// const htmlImageBlock = `<!DOCTYPE html> <html lang='en'> <head> <meta charset='UTF-8'> <title>Document</title> </head> <body> <img src=`` alt=``> </body> </html>`
 
 
-app.get('/api/images', async (req:Request, res:Response) => {
+app.get('/api/images', async (req:Request, res:Response):Promise<void> => {
     let responseFromSecondFunction:ResizeObject={status:'', msg:''};
     try {
         const name: string = req.query.filename as string;
+        const width: number = req.query.width as unknown as number;
+        const height: number = req.query.height as unknown as number;
+        if(!width || !height || !name) throw new Error('Missing parametrs! please provide all required parametrs')
+        console.log('the types of the two params are', typeof width, typeof height)
+        if((typeof Number(width) !== 'number' || width <= 0  ) || (typeof Number(height) !== 'number' || height <= 0  )) throw new Error('Incorect values! please provide a correct values to the parametrs')
         const originalImagePath = path.join(imageFolderPath, name);
         const imageThumbPath = path.join(
             imageFolderPath,
@@ -22,86 +28,49 @@ app.get('/api/images', async (req:Request, res:Response) => {
             'thumbnail',
             name.split('.')[0] + '_thumb.jpg'
         );
-        const width: number = req.query.width as unknown as number;
-        const height: number = req.query.height as unknown as number;
         if(fs.existsSync(originalImagePath)){
             if (fs.existsSync(imageThumbPath)) {
                 const dimensions = sizeOf(imageThumbPath);
                 const thumbImageWidth: number = dimensions.width as unknown as number;
                 const thumbImageHeight: number = dimensions.height as unknown as number;
                 if (width !== thumbImageWidth || height !== thumbImageHeight) {
-                    responseFromSecondFunction = await giveOtherDim(originalImagePath, width, height)
+                    responseFromSecondFunction = await transform(originalImagePath, width, height)
                 }
             } else {
-                responseFromSecondFunction = await giveOtherDim(originalImagePath, width, height)
+                responseFromSecondFunction = await transform(originalImagePath, width, height)
             }
         }
         else{
-            responseFromSecondFunction.status = "error"
-            responseFromSecondFunction.msg = `${name} : This image doesn't existe`
+            throw new Error(`${name} : This image doesn't existe`)
         }
         if(responseFromSecondFunction.status==="error"){
             res.send(responseFromSecondFunction.msg)
         }else{
-            res.send(imageThumbPath);
+            res.status(200)
+            setTimeout(()=>{
+                res.send(`
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Document</title>
+                        <script src="../src/index.ts"></script>
+                    </head>
+                    <body>
+                        <div style="margin-left: 25%;margin-top: 10%">
+                            <img src=${getImage(imageThumbPath)} alt=${name}>
+                        </div>
+                    </body>
+                    </html>
+                `);
+            }, 1000)
+            // res.sendFile('./static/imagePage.html');
         }
     } catch (err) {
         res.send(`something wrong happened : ${err}` )
     }
 });
 
-async function giveOtherDim(
-    imagePath: string,
-    width: number,
-    height: number
-): Promise<ResizeObject>{
-    const resultObject:ResizeObject={ status:'', msg:'' };
-    const listPaths = imagePath.split('\\');
-    const listPathWithoutLastElement = listPaths.slice(0, listPaths.length - 2);
-    const newImagePath = path.join(...listPathWithoutLastElement);
-    const overridePath = path.join(
-        newImagePath,
-        'thumbnail',
-        listPaths[listPaths.length - 1].split('.')[0] + '_thumb.jpg'
-    );
-    // let image: Buffer;
-    // fs.access(imagePath, fs.constants.R_OK, async (error) => {
-    //     if (!error) {
-    const fileContent:Buffer = fs.readFileSync(imagePath)
-    // async (err, data) => {
-    //     // const fsReadFileResult:ResizeObject = {status:'', msg:''}
-    //     if (data) {
-    sharp(fileContent)
-    .resize(Number(width), Number(height))
-    .toFile(overridePath, (err, info) => {
-        if(info){
-            resultObject.status = "success"
-            resultObject.msg = "operation succeded"
-            // console.log('the value of the variable resultObject is : ', resultObject)
-            return resultObject
-        }else if(err){
-            resultObject.status = "error"
-            resultObject.msg = `problem occured in resizing image , ${err}`
-            console.log('the value of the variable resultObject is : ', resultObject)
-            return resultObject
-        }
-    });
-    return resultObject
-        // } else if (err) {
-        //     resultObject.status = "error"
-        //     resultObject.msg = `Problem while reading the existing file , ${err}`
-        //     return resultObject
-        // }
-    // });
-        // } else {
-        //     resultObject.status = "error"
-        //     resultObject.msg = `${imagePath} is not readable or doesn't exist`
-        // }
-        // console.log('the value of the variable resultObject is : ', resultObject)
-    // });
-    // resultObject.status = fsReadFileResult.status
-    // resultObject.msg = fsReadFileResult.msg
-}
 
 
 app.listen(port, () => {
