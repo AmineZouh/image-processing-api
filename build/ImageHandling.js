@@ -51,51 +51,36 @@ function transform(imagePath, width, height) {
             listPaths = imagePath.split('\\');
             listPathWithoutLastElement = listPaths.slice(0, listPaths.length - 2);
             newImagePath = path_1.default.join.apply(path_1.default, listPathWithoutLastElement);
-            overridePath = path_1.default.join(newImagePath, 'thumbnail', listPaths[listPaths.length - 1].split('.')[0] + '_thumb.jpg');
+            overridePath = path_1.default.join(newImagePath, 'thumbnail', listPaths[listPaths.length - 1].split('.')[0] + "_".concat(width, "_").concat(height, "_thumb.jpg"));
             fileContent = fs_1.default.readFileSync(imagePath);
-            // async (err, data) => {
-            //     // const fsReadFileResult:ResizeObject = {status:'', msg:''}
-            //     if (data) {
             (0, sharp_1.default)(fileContent)
                 .resize(Number(width), Number(height))
                 .toFile(overridePath, function (err, info) {
                 if (info) {
                     resultObject.status = "success";
                     resultObject.msg = "operation succeded";
-                    // console.log('the value of the variable resultObject is : ', resultObject)
                     return resultObject;
                 }
                 else if (err) {
                     resultObject.status = "error";
                     resultObject.msg = "problem occured in resizing image , ".concat(err);
-                    // console.log('the value of the variable resultObject is : ', resultObject)
                     return resultObject;
                 }
             });
-            return [2 /*return*/, resultObject
-                // } else if (err) {
-                //     resultObject.status = "error"
-                //     resultObject.msg = `Problem while reading the existing file , ${err}`
-                //     return resultObject
-                // }
-                // });
-                // } else {
-                //     resultObject.status = "error"
-                //     resultObject.msg = `${imagePath} is not readable or doesn't exist`
-                // }
-                // console.log('the value of the variable resultObject is : ', resultObject)
-                // });
-                // resultObject.status = fsReadFileResult.status
-                // resultObject.msg = fsReadFileResult.msg
-            ];
+            return [2 /*return*/, resultObject];
         });
     });
 }
 exports.transform = transform;
 function getImage(imagePath) {
-    var file = fs_1.default.readFileSync(imagePath);
-    var imageDataBase64 = Buffer.from(file).toString('base64');
-    var imageDataURI = "data:image/jpeg;base64,".concat(imageDataBase64);
-    return (imageDataURI);
+    return __awaiter(this, void 0, void 0, function () {
+        var file, imageDataBase64, imageDataURI;
+        return __generator(this, function (_a) {
+            file = fs_1.default.readFileSync(imagePath);
+            imageDataBase64 = Buffer.from(file).toString('base64');
+            imageDataURI = "data:image/jpeg;base64,".concat(imageDataBase64);
+            return [2 /*return*/, (imageDataURI)];
+        });
+    });
 }
 exports.getImage = getImage;

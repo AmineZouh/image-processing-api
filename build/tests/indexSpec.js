@@ -44,6 +44,7 @@ var index_1 = __importDefault(require("../index"));
 var path_1 = __importDefault(require("path"));
 var fs_1 = __importDefault(require("fs"));
 var ImageHandling_1 = require("../ImageHandling");
+var image_size_1 = require("image-size");
 var request = (0, supertest_1.default)(index_1.default);
 describe('the api should passes all those tests', function () {
     it('should get the endpoint api/images', function () { return __awaiter(void 0, void 0, void 0, function () {
@@ -51,7 +52,7 @@ describe('the api should passes all those tests', function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    testPath = path_1.default.join(__dirname, '..', '..', 'static', 'thumbnail', 'fjord_thumb.jpg');
+                    testPath = path_1.default.join(__dirname, '..', '..', 'static', 'thumbnail', 'fjord_360_350_thumb.jpg');
                     return [4 /*yield*/, request.get('/api/images?filename=fjord.jpg&width=360&height=350')];
                 case 1:
                     response = _a.sent();
@@ -62,15 +63,44 @@ describe('the api should passes all those tests', function () {
             }
         });
     }); });
-    it('a new image should be situated at thumbnail folder when getting the endpoint', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var response;
+    it('a new image should be situated at thumbnail folder when calling transform', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var imagePath, resultPath, width, height;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, request.get('/api/images?filename=icelandwaterfall.jpg&width=360&height=350')];
+                case 0:
+                    imagePath = path_1.default.join(__dirname, '..', '..', 'static', 'img', 'icelandwaterfall.jpg');
+                    resultPath = path_1.default.join(__dirname, '..', '..', 'static', 'thumbnail', 'icelandwaterfall_206_311_thumb.jpg');
+                    width = 206;
+                    height = 311;
+                    if (fs_1.default.existsSync(resultPath) === true)
+                        fs_1.default.unlinkSync(resultPath);
+                    return [4 /*yield*/, (0, ImageHandling_1.transform)(imagePath, width, height)];
                 case 1:
-                    response = _a.sent();
+                    _a.sent();
                     setTimeout(function () {
-                        expect(fs_1.default.existsSync(response.text)).toBe(true);
+                        expect(fs_1.default.existsSync(resultPath)).toBe(true);
+                    }, 1000);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    it('The new image should have the same dimensions', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var imagePath, verifyPath, width, height;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    imagePath = path_1.default.join(__dirname, '..', '..', 'static', 'img', 'icelandwaterfall.jpg');
+                    verifyPath = path_1.default.join(__dirname, '..', '..', 'static', 'thumbnail', 'icelandwaterfall_207_312_thumb.jpg');
+                    width = 207;
+                    height = 312;
+                    if (fs_1.default.existsSync(verifyPath) === true)
+                        fs_1.default.unlinkSync(verifyPath);
+                    return [4 /*yield*/, (0, ImageHandling_1.transform)(imagePath, width, height)];
+                case 1:
+                    _a.sent();
+                    setTimeout(function () {
+                        var dimensions = (0, image_size_1.imageSize)(verifyPath);
+                        expect(dimensions.width === width && dimensions.height === height).toBe(true);
                     }, 1000);
                     return [2 /*return*/];
             }

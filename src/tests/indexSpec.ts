@@ -3,31 +3,43 @@ import app from '../index';
 import path from 'path';
 import fs from 'fs'
 import { transform } from '../ImageHandling';
+import {imageSize} from 'image-size'
 
 const request = supertest(app);
 
 describe('the api should passes all those tests', () => {
     it('should get the endpoint api/images', async () => {
         const testPath =
-            path.join(__dirname, '..', '..', 'static', 'thumbnail', 'fjord_thumb.jpg');
+            path.join(__dirname, '..', '..', 'static', 'thumbnail', 'fjord_360_350_thumb.jpg');
         const response = await request.get(
             '/api/images?filename=fjord.jpg&width=360&height=350'
         );
         expect(response.error).toBeFalsy();
         expect(response.statusCode).toBe(200);
         expect(typeof response.text).toBe('string');
-        // expect(response.text).toMatch(/\*<html>\*/);
-        // expect(response.text).toMatch(/\*<img\*/);
-        // expect(response.text).toMatch(/\*<\/html>\*/);
     });
-    it('a new image should be situated at thumbnail folder when getting the endpoint', async () => {
-        const response = await request.get(
-            '/api/images?filename=icelandwaterfall.jpg&width=360&height=350'
-        );
+    it('a new image should be situated at thumbnail folder when calling transform', async () => {
+        const imagePath = path.join(__dirname, '..', '..', 'static', 'img', 'icelandwaterfall.jpg')
+        const resultPath = path.join(__dirname, '..', '..', 'static', 'thumbnail', 'icelandwaterfall_206_311_thumb.jpg')
+        const width = 206
+        const height = 311
+        if(fs.existsSync(resultPath)===true) fs.unlinkSync(resultPath)
+        await transform(imagePath, width, height)
         setTimeout(()=>{
-            expect(fs.existsSync(response.text)).toBe(true);
+            expect(fs.existsSync(resultPath)).toBe(true);
         }, 1000)
-        
+    });
+    it('The new image should have the same dimensions', async () => {
+        const imagePath = path.join(__dirname, '..', '..', 'static', 'img', 'icelandwaterfall.jpg')
+        const verifyPath = path.join(__dirname, '..', '..', 'static', 'thumbnail', 'icelandwaterfall_207_312_thumb.jpg')
+        const width = 207
+        const height = 312
+        if(fs.existsSync(verifyPath)===true) fs.unlinkSync(verifyPath)
+        await transform(imagePath, width, height)
+        setTimeout(()=>{
+            const dimensions = imageSize(verifyPath)
+            expect(dimensions.width===width && dimensions.height===height).toBe(true);
+        }, 1000)
     });
     it('expect transform to not return error message', async () => {
         const imagePath = path.join(__dirname, '..', '..', 'static', 'img', 'encenadaport.jpg')

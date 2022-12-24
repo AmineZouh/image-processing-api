@@ -41,66 +41,64 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var fs_1 = __importDefault(require("fs"));
-var image_size_1 = __importDefault(require("image-size"));
 var path_1 = __importDefault(require("path"));
 var ImageHandling_1 = require("./ImageHandling");
 var app = (0, express_1.default)();
 var port = 3000;
 var imageFolderPath = path_1.default.join(__dirname, '..', 'static', 'img');
-// const htmlImageBlock = `<!DOCTYPE html> <html lang='en'> <head> <meta charset='UTF-8'> <title>Document</title> </head> <body> <img src=`` alt=``> </body> </html>`
 app.get('/api/images', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var responseFromSecondFunction, name_1, width, height, originalImagePath, imageThumbPath_1, dimensions, thumbImageWidth, thumbImageHeight, err_1;
+    var responseFromSecondFunction, name_1, width, height, originalImagePath, imageThumbPath_1, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 responseFromSecondFunction = { status: '', msg: '' };
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 9, , 10]);
+                _a.trys.push([1, 6, , 7]);
                 name_1 = req.query.filename;
                 width = req.query.width;
                 height = req.query.height;
                 if (!width || !height || !name_1)
                     throw new Error('Missing parametrs! please provide all required parametrs');
-                console.log('the types of the two params are', typeof width, typeof height);
                 if ((typeof Number(width) !== 'number' || width <= 0) || (typeof Number(height) !== 'number' || height <= 0))
                     throw new Error('Incorect values! please provide a correct values to the parametrs');
                 originalImagePath = path_1.default.join(imageFolderPath, name_1);
-                imageThumbPath_1 = path_1.default.join(imageFolderPath, '..', 'thumbnail', name_1.split('.')[0] + '_thumb.jpg');
-                if (!fs_1.default.existsSync(originalImagePath)) return [3 /*break*/, 7];
-                if (!fs_1.default.existsSync(imageThumbPath_1)) return [3 /*break*/, 4];
-                dimensions = (0, image_size_1.default)(imageThumbPath_1);
-                thumbImageWidth = dimensions.width;
-                thumbImageHeight = dimensions.height;
-                if (!(width !== thumbImageWidth || height !== thumbImageHeight)) return [3 /*break*/, 3];
+                imageThumbPath_1 = path_1.default.join(imageFolderPath, '..', 'thumbnail', name_1.split('.')[0] + "_".concat(width, "_").concat(height, "_thumb.jpg"));
+                if (!fs_1.default.existsSync(originalImagePath)) return [3 /*break*/, 4];
+                if (!!fs_1.default.existsSync(imageThumbPath_1)) return [3 /*break*/, 3];
                 return [4 /*yield*/, (0, ImageHandling_1.transform)(originalImagePath, width, height)];
             case 2:
                 responseFromSecondFunction = _a.sent();
                 _a.label = 3;
-            case 3: return [3 /*break*/, 6];
-            case 4: return [4 /*yield*/, (0, ImageHandling_1.transform)(originalImagePath, width, height)];
+            case 3: return [3 /*break*/, 5];
+            case 4: throw new Error("".concat(name_1, " : This image doesn't existe"));
             case 5:
-                responseFromSecondFunction = _a.sent();
-                _a.label = 6;
-            case 6: return [3 /*break*/, 8];
-            case 7: throw new Error("".concat(name_1, " : This image doesn't existe"));
-            case 8:
                 if (responseFromSecondFunction.status === "error") {
                     res.send(responseFromSecondFunction.msg);
                 }
                 else {
                     res.status(200);
-                    setTimeout(function () {
-                        res.send("\n                    <!DOCTYPE html>\n                    <html lang=\"en\">\n                    <head>\n                        <meta charset=\"UTF-8\">\n                        <title>Document</title>\n                        <script src=\"../src/index.ts\"></script>\n                    </head>\n                    <body>\n                        <div style=\"margin-left: 25%;margin-top: 10%\">\n                            <img src=".concat((0, ImageHandling_1.getImage)(imageThumbPath_1), " alt=").concat(name_1, ">\n                        </div>\n                    </body>\n                    </html>\n                "));
-                    }, 1000);
-                    // res.sendFile('./static/imagePage.html');
+                    setTimeout(function () { return __awaiter(void 0, void 0, void 0, function () {
+                        var _a, _b, _c;
+                        return __generator(this, function (_d) {
+                            switch (_d.label) {
+                                case 0:
+                                    _b = (_a = res).send;
+                                    _c = "\n                    <!DOCTYPE html>\n                    <html lang=\"en\">\n                    <head>\n                        <meta charset=\"UTF-8\">\n                        <title>Document</title>\n                        <script src=\"../src/index.ts\"></script>\n                    </head>\n                    <body>\n                        <div style=\"margin-left: 25%;margin-top: 10%\">\n                            <img src=".concat;
+                                    return [4 /*yield*/, (0, ImageHandling_1.getImage)(imageThumbPath_1)];
+                                case 1:
+                                    _b.apply(_a, [_c.apply("\n                    <!DOCTYPE html>\n                    <html lang=\"en\">\n                    <head>\n                        <meta charset=\"UTF-8\">\n                        <title>Document</title>\n                        <script src=\"../src/index.ts\"></script>\n                    </head>\n                    <body>\n                        <div style=\"margin-left: 25%;margin-top: 10%\">\n                            <img src=", [_d.sent(), " alt="]).concat(name_1, ">\n                        </div>\n                    </body>\n                    </html>\n                ")]);
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); }, 1000);
                 }
-                return [3 /*break*/, 10];
-            case 9:
+                return [3 /*break*/, 7];
+            case 6:
                 err_1 = _a.sent();
                 res.send("something wrong happened : ".concat(err_1));
-                return [3 /*break*/, 10];
-            case 10: return [2 /*return*/];
+                return [3 /*break*/, 7];
+            case 7: return [2 /*return*/];
         }
     });
 }); });

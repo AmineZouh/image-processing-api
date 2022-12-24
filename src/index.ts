@@ -1,6 +1,5 @@
 import express from 'express';
 import fs from 'fs';
-import sizeOf from 'image-size';
 import path from 'path';
 import ResizeObject from './ResizeObject.interface'
 import { Request, Response } from 'express';
@@ -9,7 +8,6 @@ import {transform, getImage} from './ImageHandling';
 const app = express();
 const port = 3000;
 const imageFolderPath = path.join(__dirname, '..', 'static', 'img');
-// const htmlImageBlock = `<!DOCTYPE html> <html lang='en'> <head> <meta charset='UTF-8'> <title>Document</title> </head> <body> <img src=`` alt=``> </body> </html>`
 
 
 app.get('/api/images', async (req:Request, res:Response):Promise<void> => {
@@ -19,24 +17,16 @@ app.get('/api/images', async (req:Request, res:Response):Promise<void> => {
         const width: number = req.query.width as unknown as number;
         const height: number = req.query.height as unknown as number;
         if(!width || !height || !name) throw new Error('Missing parametrs! please provide all required parametrs')
-        console.log('the types of the two params are', typeof width, typeof height)
         if((typeof Number(width) !== 'number' || width <= 0  ) || (typeof Number(height) !== 'number' || height <= 0  )) throw new Error('Incorect values! please provide a correct values to the parametrs')
         const originalImagePath = path.join(imageFolderPath, name);
         const imageThumbPath = path.join(
             imageFolderPath,
             '..',
             'thumbnail',
-            name.split('.')[0] + '_thumb.jpg'
+            name.split('.')[0] + `_${width}_${height}_thumb.jpg`
         );
         if(fs.existsSync(originalImagePath)){
-            if (fs.existsSync(imageThumbPath)) {
-                const dimensions = sizeOf(imageThumbPath);
-                const thumbImageWidth: number = dimensions.width as unknown as number;
-                const thumbImageHeight: number = dimensions.height as unknown as number;
-                if (width !== thumbImageWidth || height !== thumbImageHeight) {
-                    responseFromSecondFunction = await transform(originalImagePath, width, height)
-                }
-            } else {
+            if (!fs.existsSync(imageThumbPath)) {
                 responseFromSecondFunction = await transform(originalImagePath, width, height)
             }
         }
@@ -47,7 +37,7 @@ app.get('/api/images', async (req:Request, res:Response):Promise<void> => {
             res.send(responseFromSecondFunction.msg)
         }else{
             res.status(200)
-            setTimeout(()=>{
+            setTimeout(async ()=>{
                 res.send(`
                     <!DOCTYPE html>
                     <html lang="en">
@@ -58,13 +48,12 @@ app.get('/api/images', async (req:Request, res:Response):Promise<void> => {
                     </head>
                     <body>
                         <div style="margin-left: 25%;margin-top: 10%">
-                            <img src=${getImage(imageThumbPath)} alt=${name}>
+                            <img src=${await getImage(imageThumbPath)} alt=${name}>
                         </div>
                     </body>
                     </html>
                 `);
             }, 1000)
-            // res.sendFile('./static/imagePage.html');
         }
     } catch (err) {
         res.send(`something wrong happened : ${err}` )
